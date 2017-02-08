@@ -121,9 +121,11 @@ public class Robot extends IterativeRobot {
 		else if(aButton){ //Set Max Speed
 			if(maxSpeed == 0.4){
 				maxSpeed = 1;
+				timer.delay(0.25);
 			}
 			else{
 				maxSpeed = 0.4;
+				timer.delay(0.25);
 			}
 		}
 		
