@@ -22,6 +22,7 @@ public class Robot extends IterativeRobot {
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	double maxSpeed;
+	double shooterSpeed;
 	double fMove;
 	double rMove;
 	double turn;
@@ -29,6 +30,7 @@ public class Robot extends IterativeRobot {
 	boolean aButton;
 	boolean bButton;
 	boolean xButton;
+	int dPadSpeed;
 	Timer timer;
 	Spark leftM;
 	Spark rightM;
@@ -47,6 +49,7 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
 		maxSpeed = 0.4;
+		shooterSpeed = 1.0;
 		timer = new Timer();
 		leftM = new Spark(0);
 		rightM = new Spark(1);
@@ -99,10 +102,11 @@ public class Robot extends IterativeRobot {
 		fMove = controller.getRawAxis(3); // Right Trigger
 		rMove = controller.getRawAxis(2); // Left Trigger
 		turn = controller.getRawAxis(0); // Left Stick
-		climb = controller.getRawAxis(1); // TBD, right stick Y
+		climb = controller.getRawAxis(5); // TBD, right stick Y
 		aButton = controller.getRawButton(0); // TBD A
 		bButton = controller.getRawButton(1); // TBD B
-		xButton = controller.getRawButton(2); // TBD X
+		xButton = controller.getRawButton(3); // TBD X
+		dPadSpeed = controller.getPOV(); // D-Pad
 		
 		CameraServer.getInstance().startAutomaticCapture(); // For USB Camera
 		
@@ -135,6 +139,21 @@ public class Robot extends IterativeRobot {
 		
 		else if(xButton){ //Shooter Reverse
 			shootM.set(-1.0);
+		}
+		
+		else if(dPadSpeed != 0){
+			if (dPadSpeed == 90){
+				if(shooterSpeed < 1.0){
+					shooterSpeed += 0.1;
+					timer.delay(0.3);
+				}
+			}
+			else if(dPadSpeed == 270){
+				if(shooterSpeed > 0.0){
+					shooterSpeed -= 0.1;
+					timer.delay(0.3);
+				}
+			}
 		}
 		
 	}
