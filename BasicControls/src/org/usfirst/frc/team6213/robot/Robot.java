@@ -4,6 +4,9 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Joystick;
@@ -30,7 +33,8 @@ public class Robot extends IterativeRobot {
 	boolean aButton;
 	boolean bButton;
 	boolean xButton;
-	int dPadSpeed;
+	boolean rightBumper;
+	boolean leftBumper;
 	Timer timer;
 	Spark leftM;
 	Spark rightM;
@@ -57,6 +61,11 @@ public class Robot extends IterativeRobot {
 		climbM = new Spark(3);
 		controller = new Joystick(0);
 		rDrive = new RobotDrive(leftM,rightM);
+		rDrive.setSafetyEnabled(false);
+		UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+		camera.setResolution(1000, 1000);
+		CvSource outputStream = CameraServer.getInstance().putVideo("Rectangle", 1000, 1000);
+		System.out.println(camera.isConnected());
 	}
 
 	/**
@@ -103,12 +112,11 @@ public class Robot extends IterativeRobot {
 		rMove = controller.getRawAxis(2); // Left Trigger
 		turn = controller.getRawAxis(0); // Left Stick
 		climb = controller.getRawAxis(5); // TBD, right stick Y
-		aButton = controller.getRawButton(0); // TBD A
-		bButton = controller.getRawButton(1); // TBD B
-		xButton = controller.getRawButton(3); // TBD X
-		dPadSpeed = controller.getPOV(); // D-Pad
-		
-		CameraServer.getInstance().startAutomaticCapture(); // For USB Camera
+		aButton = controller.getRawButton(1); // Robot Speed
+		bButton = controller.getRawButton(2); // B - Shooter Out
+		xButton = controller.getRawButton(4); // X - Shooter In
+		rightBumper = controller.getRawButton(6); // RB - Shoot Speed Increase
+		leftBumper = controller.getRawButton(5); // LB - Shoot Speed Decrease
 		
 		if(fMove > 0){ // Drive forwards
 			rDrive.drive(fMove * -maxSpeed, turn);
@@ -134,26 +142,24 @@ public class Robot extends IterativeRobot {
 		}
 		
 		else if(bButton){ //Shoot
-			shootM.set(1.0);
+			shootM.set(shooterSpeed);
 		}
 		
 		else if(xButton){ //Shooter Reverse
-			shootM.set(-1.0);
+			shootM.set(-shooterSpeed);
 		}
 		
-		else if(dPadSpeed != 0){
-			if (dPadSpeed == 90){
-				if(shooterSpeed < 1.0){
+		else if(rightBumper){
+			if(shooterSpeed < 1){
 					shooterSpeed += 0.1;
 					timer.delay(0.3);
-				}
-			}
-			else if(dPadSpeed == 270){
-				if(shooterSpeed > 0.0){
+					}
+		}
+		else if(leftBumper){
+			if(shooterSpeed > 0){
 					shooterSpeed -= 0.1;
 					timer.delay(0.3);
-				}
-			}
+					}
 		}
 		
 	}
