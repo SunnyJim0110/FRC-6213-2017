@@ -24,24 +24,24 @@ public class Robot extends IterativeRobot {
 	final String customAuto = "My Auto";
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
-	double maxSpeed;
-	double shooterSpeed;
-	double fMove;
-	double rMove;
-	double turn;
-	double climb;
-	boolean aButton;
-	boolean bButton;
-	boolean xButton;
-	boolean rightBumper;
-	boolean leftBumper;
-	Timer timer;
-	Spark leftM;
-	Spark rightM;
-	Spark shootM;
-	Spark climbM;
-	Joystick controller;
-	RobotDrive rDrive;
+	double maxSpeed = 0.4; // Driving Speed Adjustments
+	double shooterSpeed = 1.0; // Shooter Speed Adjustments
+	double fMove; // RTrigger Value
+	double rMove; // LTrigger Value
+	double turn; // Left Stick X Axis For Turning Robot
+	double climb; // Speed of the Climber from Right Stick Y Axis
+	boolean aButton; // A Button For Switching Drive Speed
+	boolean bButton; //  B Button For Activating Shooter
+	boolean xButton; // X Button For Activating Shooter In Other Direction
+	boolean rightBumper; // Right Bumper Increases Shooter Speed
+	boolean leftBumper; //  Left Bumper Decreases Shooter Speed
+	Timer timer; // Timer
+	Spark leftM; // Left Wheels
+	Spark rightM; // Right Wheels
+	Spark shootM; // Shooter
+	Spark climbM; // Climber
+	Joystick controller; // Xbox Controller
+	RobotDrive rDrive; // RobotDrive Object
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -52,8 +52,6 @@ public class Robot extends IterativeRobot {
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
-		maxSpeed = 0.4;
-		shooterSpeed = 1.0;
 		timer = new Timer();
 		leftM = new Spark(0);
 		rightM = new Spark(1);
@@ -62,10 +60,7 @@ public class Robot extends IterativeRobot {
 		controller = new Joystick(0);
 		rDrive = new RobotDrive(leftM,rightM);
 		rDrive.setSafetyEnabled(false);
-		UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-		camera.setResolution(1000, 1000);
-		CvSource outputStream = CameraServer.getInstance().putVideo("Rectangle", 1000, 1000);
-		System.out.println(camera.isConnected());
+		UsbCamera cam0 = CameraServer.getInstance().startAutomaticCapture(); // Simplified Camera
 	}
 
 	/**
@@ -126,8 +121,9 @@ public class Robot extends IterativeRobot {
 			rDrive.drive(rMove * maxSpeed, turn);
 		}
 		
-		else if(climb != 0){ // Climb Control
-			climbM.set(climb * (1.0/180.0));
+		else if(climb > 0.1 || climb < -0.1){ // Climb Control
+			climbM.set(-(climb));
+			climbM.stopMotor(); // May need to be removed
 		}
 		
 		else if(aButton){ //Set Max Speed
@@ -149,17 +145,19 @@ public class Robot extends IterativeRobot {
 			shootM.set(-shooterSpeed);
 		}
 		
-		else if(rightBumper){
-			if(shooterSpeed < 1){
-					shooterSpeed += 0.1;
-					timer.delay(0.3);
-					}
+		else if(rightBumper){ // Increase shooter speed
+			if (shooterSpeed < 1.0){
+				shooterSpeed += 0.1;
+				timer.delay(0.3);
+				
+			}
 		}
-		else if(leftBumper){
-			if(shooterSpeed > 0){
-					shooterSpeed -= 0.1;
-					timer.delay(0.3);
-					}
+		
+		else if(leftBumper){ // Decrease shooter speed
+			if(shooterSpeed > 0.0){
+				shooterSpeed -= 0.1;
+				timer.delay(0.3);
+			}
 		}
 		
 	}
